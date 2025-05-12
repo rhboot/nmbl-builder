@@ -28,7 +28,7 @@ RPMBUILD_ARGS := -D "_topdir $(TOPDIR)" \
 		 -D '_sourcedir %{_topdir}' \
 		 -D '_specdir %{_topdir}' \
 		 -D '_srcrpmdir %{_topdir}' \
-		 -D 'dist $(OS_DIST)'
+		 -D 'dist %nil'
 
 .EXPORT_ALL_VARIABLES:
 

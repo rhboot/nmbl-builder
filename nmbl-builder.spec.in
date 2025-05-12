@@ -1,6 +1,6 @@
 %global debug_package %{nil}
-%global kver %{expand:%(rpm -q kernel-core --qf '%%{VERSION}\\n' | tail -n 1 )}
-%global krel %{expand:%(rpm -q kernel-core --qf '%%{RELEASE}\\n' | tail -n 1 )}
+%global kver %(kver=$(ls -1 /usr/lib/modules/ | head -1 | cut -d'-' -f1); test -n "$kver" && echo "$kver" || echo 666)
+%global krel %(krel=$(ls -1 /usr/lib/modules/ | head -1 | cut -d'-' -f2 | cut -d'.' -f1-2); test -n "$krel" && echo "$krel" || echo 999)
 
 Summary: nmbl proof of concept as a package
 Name: nmbl-builder
@@ -12,7 +12,13 @@ URL: https:/github.com/rhboot/nmbl-poc
 
 BuildRequires: binutils
 BuildRequires: btrfs-progs
+%if 0%{?rhel} < 10
 BuildRequires: dhcp-client
+BuildRequires: systemd-networkd
+%else
+BuildRequires: kea
+BuildRequires: NetworkManager
+%endif
 BuildRequires: dracut
 BuildRequires: dracut-nmbl
 BuildRequires: dracut-network
@@ -32,7 +38,6 @@ BuildRequires: make
 BuildRequires: openssh-clients
 BuildRequires: pesign
 BuildRequires: systemd-boot
-BuildRequires: systemd-networkd
 BuildRequires: systemd-ukify
 
 Source0: nmbl-builder-%{VERSION}.tar.xz 
