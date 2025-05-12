@@ -1,0 +1,23 @@
+#!/usr/bin/bash
+
+if [[ ! -d /sys/firmware/efi/ ]] || [[ $# < 3 ]]; then
+    exit 0
+fi
+
+. /etc/os-release
+DISTRO=$(echo ${ID} | sed -e 's/rhel/redhat/' -e 's/\"//')
+
+PKG=${1}
+VER=${2}
+ARCH=${3}
+if [[ $# > 3 ]]; then
+    DISTRO=${4}
+fi
+
+FROM_DIR=/usr/lib/${PKG}/${VER}/${ARCH}/EFI/${DISTRO}
+EFI_DIR=/boot/efi/EFI/${DISTRO}
+if [[ -d ${EFI_DIR}/b ]]; then
+    EFI_DIR=${EFI_DIR}/b
+fi
+
+cp ${FROM_DIR}/* ${EFI_DIR}/.

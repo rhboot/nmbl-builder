@@ -1,0 +1,29 @@
+#!/usr/bin/bash
+
+if [[ ! -f /sys/firmware/efi/ ]]; then
+    exit 0
+fi
+
+ARCH=$(uname -m)
+AR=x64
+if [[ $arch = aarch64 ]]; then
+    AR=aa64;
+fi
+
+if [[ -f /etc/os-release ]]; then
+    DISTRO=$(grep "^ID=" /etc/os-release | sed -e 's/ID=//' -e 's/\"//g')
+fi
+
+if [[ -f /etc/kernel/cmdline ]]; then
+    BOOT_OPTIONS="$(tr -s ' ' < /etc/kernel/cmdline)"
+else
+    BOOT_OPTIONS="$(tr -s '\n' < /proc/cmdline | sed -e 's/BOOT_IMAGE=[^ ]*//')"
+fi
+
+ESP=$(lsblk -l | grep /boot/efi | cut -d' ' -f1)
+BLKDEV=$(echo ${ESP} | sed 's/[0-9]*$//')
+PARTITION=$(echo ${ESP} | rev | grep -o "^[0-9]*" | rev)
+
+echo -n "\nmbl-cloud.uki $(echo $BOOT_OPTIONS) boot=$(awk '/ \/boot / {print $1}' /etc/fstab) rd.system.gpt_auto=0" | iconv -f UTF8 -t UCS-2LE | efibootmgr -C -d /dev/${BLKDEV} -p ${PARTITION} -L nmbl_switch -l /EFI/${DISTRO}/shim${AR}.efi -@ -
+
+echo -n "\nmbl-workstation.uki $(echo $BOOT_OPTIONS) boot=$(awk '/ \/boot / {print $1}' /etc/fstab) rd.system.gpt_auto=0" | iconv -f UTF8 -t UCS-2LE | efibootmgr -C -d /dev/${BLKDEV} -p ${PARTITION} -L nmbl_kexec -l /EFI/${DISTRO}/shim${AR}.efi -@ -

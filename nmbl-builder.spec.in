@@ -36,6 +36,8 @@ BuildRequires: systemd-networkd
 BuildRequires: systemd-ukify
 
 Source0: nmbl-builder-%{VERSION}.tar.xz 
+Source1: make_efi_entries
+Source2: install_bootloader
 
 %description
 nmbl-poc is a proof of concept for a bootloader for UEFI machines based on
@@ -65,11 +67,17 @@ make nmbl-workstation.uki
 mv nmbl-workstation.signed.uki nmbl-workstation.uki
 
 %install
+install -D -d -m 0700 $RPM_BUILD_ROOT%{_bindir}/
+install -D -d -m 0700 $RPM_BUILD_ROOT%{_prefix}/lib/bootloader/
+install -m 0755 %{SOURCE1} $RPM_BUILD_ROOT%{_bindir}/
+install -m 0755 %{SOURCE2} $RPM_BUILD_ROOT%{_prefix}/lib/bootloader/
 %make_install ESPDIR="%{efi_esp_dir}"
 
 %files -n nmbl
 %defattr(-,root,root,-)
 %{efi_esp_dir}/*.uki
+%{_bindir}/make_efi_entries
+%{_prefix}/lib/bootloader/install_bootloader
 
 %changelog
 * Fri Mar 17 2023 Peter Jones <pjones@redhat.com> - 0-0
